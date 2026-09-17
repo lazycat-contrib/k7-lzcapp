@@ -1,0 +1,64 @@
+application:
+  subdomain: k7
+  background_task: true
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      backend: http://k7-server:7080/
+
+services:
+  postgres:
+    # upstream: postgres:18-alpine (docker.io)
+    image: docker.1ms.run/postgres:18-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD={{ stable_secret "db_password" }}
+      - POSTGRES_DB=K7
+    binds:
+      - /lzcapp/var/postgres:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  k7-server:
+    # upstream: ghcr.io/kaybi-gh/k7:1.11.1
+    image: ghcr.1ms.run/kaybi-gh/k7:1.11.1
+    depends_on:
+      - postgres
+    environment:
+      - Database__Provider=Postgres
+      - Database__UserID=postgres
+      - Database__Password={{ stable_secret "db_password" }}
+      - Database__Server=postgres
+      - Database__Port=5432
+      - Database__Name=K7
+      - Security__ApiKeys__HashSecret={{ stable_secret "api_keys_hash_secret" }}
+      - Paths__Config=/data/config
+      - Paths__Metadatas=/data/metadatas
+      - Paths__Logs=/data/logs
+      - Paths__Transcoding=/data/transcoding
+      - PUID=911
+      - PGID=911
+      # LazyCat gateway terminates TLS (X-Forwarded-Proto: https from a
+      # private-range proxy), so secure cookies are safe.
+      - Security__ForceHttps=true
+      # Public URL for OIDC redirects and federation.
+      - BaseUrl=https://${LAZYCAT_SUBDOMAIN}.${LAZYCAT_BOX_DOMAIN}
+    binds:
+      - /lzcapp/var/k7:/data
+      - /lzcapp/run/mnt/media:/media:ro
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fsS
+        - http://127.0.0.1:7080/alive
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
