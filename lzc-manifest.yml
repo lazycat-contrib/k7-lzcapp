@@ -6,7 +6,6 @@ application:
   upstreams:
     - location: /
       backend: http://k7-server:7080/
-
 services:
   postgres:
     # upstream: postgres:18-alpine (docker.io)
@@ -24,10 +23,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
   k7-server:
-    # upstream: ghcr.io/kaybi-gh/k7:1.11.1
-    image: ghcr.1ms.run/kaybi-gh/k7:1.11.1
+    # upstream: ghcr.io/kaybi-gh/k7:1.12.0
+    image: ghcr.1ms.run/kaybi-gh/k7:1.12.0
     depends_on:
       - postgres
     environment:
