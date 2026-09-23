@@ -24,8 +24,8 @@ services:
       timeout: 3s
       retries: 5
   k7-server:
-    # upstream: ghcr.io/kaybi-gh/k7:1.12.1
-    image: ghcr.1ms.run/kaybi-gh/k7:1.12.1
+    # upstream: ghcr.io/kaybi-gh/k7:1.13.0
+    image: ghcr.1ms.run/kaybi-gh/k7:1.13.0
     depends_on:
       - postgres
     environment:
