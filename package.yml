@@ -1,5 +1,5 @@
 package: community.lazycat.app.k7
-version: 1.13.0
+version: 1.13.1
 name: K7
 description: "Self-hosted media server for a small circle of family and friends"
 min_os_version: 1.5.0
